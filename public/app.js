@@ -35,8 +35,8 @@ scene.add(directionalLight);
 const geometry = new THREE.BoxGeometry(2, 2, 2);
 const material = new THREE.MeshPhongMaterial({
     color: 0x00ff88,
-    transparent: false,  // BUG: Should be true when using opacity
-    opacity: 0.7,        // BUG: This won't work correctly with transparent: false
+    transparent: true,
+    opacity: 0.7,
     shininess: 100
 });
 const cube = new THREE.Mesh(geometry, material);
@@ -55,7 +55,7 @@ cube.add(line);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.rotateSpeed = -1.0;  // BUG: Negative value inverts X-axis rotation
+controls.rotateSpeed = 1.0;
 controls.zoomSpeed = 1.2;
 
 // Animation state
@@ -73,16 +73,16 @@ let lastTime = 0;
 function animate(time) {
     requestAnimationFrame(animate);
 
-    // BUG: Not using deltaTime, animation speed depends on frame rate
-    // Should calculate: const deltaTime = (time - lastTime) / 1000;
+    const deltaTime = (time - lastTime) / 1000;
+    lastTime = time;
+
     if (isAnimating) {
-        cube.rotation.x += rotationSpeed;
-        cube.rotation.y += rotationSpeed;
+        cube.rotation.x += rotationSpeed * deltaTime * 60;
+        cube.rotation.y += rotationSpeed * deltaTime * 60;
     }
 
     controls.update();
     renderer.render(scene, camera);
-    // BUG: lastTime is never updated
 }
 
 animate(0);
@@ -91,10 +91,10 @@ animate(0);
 // Only resets camera position, not cube rotation and scale
 document.getElementById('resetBtn').addEventListener('click', () => {
     camera.position.copy(initialCameraPosition);
+    cube.rotation.copy(initialCubeRotation);
+    cube.scale.copy(initialCubeScale);
     controls.target.set(0, 0, 0);
     controls.update();
-    // BUG: Missing cube.rotation.copy(initialCubeRotation);
-    // BUG: Missing cube.scale.copy(initialCubeScale);
 });
 
 document.getElementById('animateBtn').addEventListener('click', () => {
